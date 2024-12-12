@@ -8,6 +8,9 @@ use Illuminate\Support\Facades\Validator;
 use Laravel\Sanctum\PersonalAccessTokenResult;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\Auth;
+
+
 
 
 class UserAuthController extends Controller
