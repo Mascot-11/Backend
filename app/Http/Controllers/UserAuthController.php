@@ -1,21 +1,18 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
-use Laravel\Sanctum\PersonalAccessTokenResult;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Password;
-use Illuminate\Support\Facades\Auth;
-
-
-
+use App\Notifications\CustomResetPasswordNotification; // Correct location of the import
 
 class UserAuthController extends Controller
 {
-     public function login(Request $request)
+    // Login method
+    public function login(Request $request)
     {
         // Validate input
         $validator = Validator::make($request->all(), [
@@ -44,13 +41,16 @@ class UserAuthController extends Controller
         // Generate a new personal access token using Sanctum
         $token = $user->createToken('auth_token')->plainTextToken;
 
-        // Return response with the generated token
+        // Return response with the generated token and user details
         return response()->json([
             'access_token' => $token,
             'token_type' => 'Bearer',
+            'user' => $user, // Include user details, like name
             'message' => 'Login successful'
         ]);
     }
+
+    // Register method
     public function register(Request $request)
     {
         // Validate input, including password confirmation
@@ -85,23 +85,65 @@ class UserAuthController extends Controller
             'message' => 'Signup successful'
         ]);
     }
-     public function forgotPassword(Request $request)
+
+    // Forgot Password method
+    public function forgotPassword(Request $request)
+{
+    // Validate the email
+    $request->validate([
+        'email' => 'required|email|exists:users,email',
+    ]);
+
+    // Find the user by email
+    $user = User::where('email', $request->email)->first();
+
+    if ($user) {
+        // Generate a password reset token
+        $token = Password::createToken($user);
+
+        // Send custom password reset notification with the token
+        $user->notify(new CustomResetPasswordNotification($user, $token));
+
+        return response()->json([
+            'message' => 'Password reset link sent to your email address.'
+        ], 200);
+    }
+
+    return response()->json([
+        'message' => 'Unable to send reset link.'
+    ], 500);
+}
+    // Reset Password method
+    public function resetPassword(Request $request)
     {
-        // Validate the email
-        $request->validate([
+        // Validate the input
+        $validator = Validator::make($request->all(), [
             'email' => 'required|email|exists:users,email',
+            'token' => 'required|string', // Validate token
+            'password' => 'required|string|min:8|confirmed', // Validate password
         ]);
 
-        // Send the reset link
-        $status = Password::sendResetLink(
-            $request->only('email')
-        );
-
-        // Check if the email was sent successfully
-        if ($status === Password::RESET_LINK_SENT) {
-            return response()->json(['message' => 'Password reset link sent to your email address.'], 200);
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
         }
 
-        return response()->json(['message' => 'Unable to send reset link.'], 500);
+        // Attempt to reset the password using the token
+        $status = Password::reset(
+            $request->only('email', 'password', 'password_confirmation', 'token'),
+            function ($user) use ($request) {
+                $user->password = Hash::make($request->password);
+                $user->save();
+            }
+        );
+
+        // Return response based on reset result
+        if ($status === Password::PASSWORD_RESET) {
+            return response()->json(['message' => 'Password successfully reset.'], 200);
+        }
+
+        return response()->json(['message' => 'Failed to reset password.'], 500);
     }
-};
+}
