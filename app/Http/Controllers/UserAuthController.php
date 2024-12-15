@@ -34,7 +34,7 @@ class UserAuthController extends Controller
         // If user doesn't exist or password doesn't match
         if (!$user || !Hash::check($request->password, $user->password)) {
             return response()->json([
-                'message' => 'Invalid email or password'
+                'message' => 'Invalid credentials , Please Try Again'
             ], 401); // Unauthorized
         }
 
@@ -145,5 +145,76 @@ class UserAuthController extends Controller
         }
 
         return response()->json(['message' => 'Failed to reset password.'], 500);
+
     }
+    public function users()
+{
+    // Fetch all users, you can adjust it to exclude sensitive data
+    $users = User::all();
+
+    if ($users->isEmpty()) {
+        return response()->json(['message' => 'No users found'], 404);
+    }
+
+    return response()->json($users);
+}
+
+
+ public function createUser(Request $request)
+{
+    // Validate the request data
+    $validated = $request->validate([
+        'name' => 'required|string|max:255',
+        'email' => 'required|email|unique:users,email',
+        'password' => 'required|string|min:6|confirmed', // 'confirmed' will automatically check password and confirm_password match
+    ]);
+
+    // Create a new user
+    $user = User::create([
+        'name' => $validated['name'],
+        'email' => $validated['email'],
+        'password' => bcrypt($validated['password']), // Hash the password
+    ]);
+
+    return response()->json($user, 201); // Return the created user with status 201
+}
+
+ public function updateUser(Request $request, $id)
+    {
+        $user = User::find($id);
+
+        if (!$user) {
+            return response()->json(['message' => 'User not found'], 404);
+        }
+
+        // Validate the incoming data
+        $validated = $request->validate([
+            'name' => 'nullable|string|max:255',
+            'email' => 'nullable|email|unique:users,email,' . $id,
+            'password' => 'nullable|string|min:6',
+        ]);
+
+        // Update user details
+        $user->update([
+            'name' => $validated['name'] ?? $user->name,
+            'email' => $validated['email'] ?? $user->email,
+            'password' => isset($validated['password']) ? bcrypt($validated['password']) : $user->password,
+        ]);
+
+        return response()->json($user); // Return updated user data
+    }
+ public function deleteUser($id)
+    {
+        $user = User::find($id);
+
+        if (!$user) {
+            return response()->json(['message' => 'User not found'], 404);
+        }
+
+        // Delete the user
+        $user->delete();
+
+        return response()->json(['message' => 'User deleted successfully'], 200);
+    }
+
 }
