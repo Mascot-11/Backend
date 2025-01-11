@@ -8,147 +8,126 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Password;
 use App\Notifications\CustomResetPasswordNotification;
-use Carbon\Carbon;
 
 class UserAuthController extends Controller
 {
-
     // Login method
     public function login(Request $request)
     {
-        // Validate input
         $validator = Validator::make($request->all(), [
-            'email' => 'required|email', // Email is required and must be a valid email
-            'password' => 'required|string', // Password is required and must be a string
+            'email' => 'required|email',
+            'password' => 'required|string',
         ]);
 
-        // Check if validation fails
         if ($validator->fails()) {
             return response()->json([
                 'message' => 'Validation failed',
-                'errors' => $validator->errors()
+                'errors' => $validator->errors(),
             ], 422);
         }
 
-        // Attempt to find the user by email
         $user = User::where('email', $request->email)->first();
 
-        // If user doesn't exist or password doesn't match
         if (!$user || !Hash::check($request->password, $user->password)) {
             return response()->json([
-                'message' => 'Invalid credentials, Please Try Again'
-            ], 401); // Unauthorized
+                'message' => 'Invalid credentials, Please Try Again',
+            ], 401);
         }
 
-        // Generate a new personal access token using Sanctum with expiry time of 24 hours
-        $token = $user->createToken('auth_token', ['*'], Carbon::now()->addHours(24))->plainTextToken;
+        // Generate token without setting manual expiration
+        $token = $user->createToken('auth_token')->plainTextToken;
 
-        // Return response with the generated token and user details
         return response()->json([
             'access_token' => $token,
             'token_type' => 'Bearer',
-            'user' => $user, // Include user details
-            'role_message' => $this->getRoleMessage($user->role), // Add role-specific message
+            'user' => $user,
+            'role_message' => $this->getRoleMessage($user->role),
         ]);
     }
 
-    // Helper function to generate a role-specific message
+    // Helper function for role-specific message
     private function getRoleMessage($role)
     {
-        switch ($role) {
-            case 'admin':
-                return 'Admin login successful';
-            case 'tattoo_artist':
-                return 'Tattoo artist login successful';
-            default:
-                return 'User login successful';
-        }
+        return match ($role) {
+            'admin' => 'Admin login successful',
+            'tattoo_artist' => 'Tattoo artist login successful',
+            default => 'User login successful',
+        };
     }
 
     // Register method
     public function register(Request $request)
     {
-        // Validate input, including password confirmation and role
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email|max:255',
-            'password' => 'required|string|min:6|confirmed',
-            'role' => 'required|string|in:tattoo_artist,user', // Ensure role is specified and valid
+            'password' => 'required|string|min:8|confirmed',
+            'role' => 'required|string|in:tattoo_artist,user',
         ]);
 
-        // Check if validation fails
         if ($validator->fails()) {
             return response()->json([
-                'message' => 'Validation failed',
-                'errors' => $validator->errors()
+                'message' => 'Email Already Exists',
+                'errors' => $validator->errors(),
             ], 422);
         }
 
-        // Create a new user and hash the password
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
-            'password' => Hash::make($request->password), // Hash the password before saving
-            'role' => $request->role, // Store the role
+            'password' => Hash::make($request->password),
+            'role' => $request->role,
         ]);
 
-        // Generate a new personal access token using Sanctum with expiry time of 24 hours
-        $token = $user->createToken('auth_token', ['*'], Carbon::now()->addHours(24))->plainTextToken;
+        // Generate token without manual expiration
+        $token = $user->createToken('auth_token')->plainTextToken;
 
-        // Return response with the generated token
         return response()->json([
             'access_token' => $token,
             'token_type' => 'Bearer',
-            'message' => 'Signup successful'
+            'message' => 'Signup successful',
         ]);
     }
 
     // Forgot Password method
     public function forgotPassword(Request $request)
     {
-        // Validate the email
         $request->validate([
             'email' => 'required|email|exists:users,email',
         ]);
 
-        // Find the user by email
         $user = User::where('email', $request->email)->first();
 
         if ($user) {
-            // Generate a password reset token
             $token = Password::createToken($user);
-
-            // Send custom password reset notification with the token
             $user->notify(new CustomResetPasswordNotification($user, $token));
 
             return response()->json([
-                'message' => 'Password reset link sent to your email address.'
+                'message' => 'Password reset link sent to your email address.',
             ], 200);
         }
 
         return response()->json([
-            'message' => 'Unable to send reset link.'
+            'message' => 'Unable to send reset link.',
         ], 500);
     }
 
     // Reset Password method
     public function resetPassword(Request $request)
     {
-        // Validate the input
         $validator = Validator::make($request->all(), [
             'email' => 'required|email|exists:users,email',
-            'token' => 'required|string', // Validate token
-            'password' => 'required|string|min:8|confirmed', // Validate password
+            'token' => 'required|string',
+            'password' => 'required|string|min:8|confirmed',
         ]);
 
         if ($validator->fails()) {
             return response()->json([
                 'message' => 'Validation failed',
-                'errors' => $validator->errors()
+                'errors' => $validator->errors(),
             ], 422);
         }
 
-        // Attempt to reset the password using the token
         $status = Password::reset(
             $request->only('email', 'password', 'password_confirmation', 'token'),
             function ($user) use ($request) {
@@ -157,32 +136,24 @@ class UserAuthController extends Controller
             }
         );
 
-        // Return response based on reset result
-        if ($status === Password::PASSWORD_RESET) {
-            return response()->json(['message' => 'Password successfully reset.'], 200);
-        }
-
-        return response()->json(['message' => 'Failed to reset password.'], 500);
+        return $status === Password::PASSWORD_RESET
+            ? response()->json(['message' => 'Password successfully reset.'], 200)
+            : response()->json(['message' => 'Failed to reset password.'], 500);
     }
 
-    // Get all users (e.g., for admin purposes)
+    // Get all users (Admin-only)
     public function users()
     {
-        // Only admins can fetch the list of all users
-        if (!in_array(auth()->user()->role, ['tattoo_artist', 'admin'])) {
+        if (!in_array(auth()->user()->role, ['admin'])) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
-
-
-        $users = User::all();
-        return response()->json($users);
+        return response()->json(User::all());
     }
 
-    // Create new user (e.g., admin creating users)
+    // Create new user (Admin-only)
     public function createUser(Request $request)
     {
-        // Only admin can create users
         if (auth()->user()->role !== 'admin') {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
@@ -190,29 +161,29 @@ class UserAuthController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
-            'password' => 'required|string|min:6|confirmed',
-            'role' => 'required|string|in:admin,tattoo_artist,user', // Ensure valid role
+            'password' => 'required|string|min:8|confirmed',
+            'role' => 'required|string|in:admin,tattoo_artist,user',
         ]);
 
         $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
-            'password' => bcrypt($validated['password']), // Hash the password
-            'role' => $validated['role'], // Assign role from request
+            'password' => bcrypt($validated['password']),
+            'role' => $validated['role'],
         ]);
 
-        return response()->json($user, 201); // Return the created user
+        return response()->json($user, 201);
     }
 
-    // Update user (e.g., for admin purposes)
+    // Update user (Admin-only)
     public function updateUser(Request $request, $id)
     {
-        // Only admins can update users
         if (auth()->user()->role !== 'admin') {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
         $user = User::find($id);
+
         if (!$user) {
             return response()->json(['message' => 'User not found'], 404);
         }
@@ -220,7 +191,7 @@ class UserAuthController extends Controller
         $validated = $request->validate([
             'name' => 'nullable|string|max:255',
             'email' => 'nullable|email|unique:users,email,' . $id,
-            'password' => 'nullable|string|min:6',
+            'password' => 'nullable|string|min:8',
         ]);
 
         $user->update([
@@ -232,15 +203,15 @@ class UserAuthController extends Controller
         return response()->json($user);
     }
 
-    // Delete user (e.g., for admin purposes)
+    // Delete user (Admin-only)
     public function deleteUser($id)
     {
-        // Only admins can delete users
         if (auth()->user()->role !== 'admin') {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
         $user = User::find($id);
+
         if (!$user) {
             return response()->json(['message' => 'User not found'], 404);
         }

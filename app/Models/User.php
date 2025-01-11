@@ -84,4 +84,13 @@ class User extends Authenticatable
     {
         return $this->role === 'user';
     }
+
+        public function appointments()
+    {
+        return $this->hasMany(Appointment::class, 'user_id');
+    }
+    public function artistAppointments()
+    {
+    return $this->hasMany(Appointment::class, 'artist_id');
+    }
 }
