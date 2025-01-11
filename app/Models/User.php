@@ -21,6 +21,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role', // Make sure 'role' is included for mass assignment
     ];
 
     /**
@@ -52,5 +53,35 @@ class User extends Authenticatable
     public function sendPasswordResetNotification($token)
     {
         $this->notify(new CustomResetPasswordNotification($token));
+    }
+
+    /**
+     * Check if the user has an admin role.
+     *
+     * @return bool
+     */
+    public function isAdmin()
+    {
+        return $this->role === 'admin';
+    }
+
+    /**
+     * Check if the user has a tattoo artist role.
+     *
+     * @return bool
+     */
+    public function isTattooArtist()
+    {
+        return $this->role === 'tattoo_artist';
+    }
+
+    /**
+     * Check if the user has a regular user role.
+     *
+     * @return bool
+     */
+    public function isUser()
+    {
+        return $this->role === 'user';
     }
 }
