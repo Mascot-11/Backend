@@ -175,33 +175,42 @@ class UserAuthController extends Controller
         return response()->json($user, 201);
     }
 
-    // Update user (Admin-only)
-    public function updateUser(Request $request, $id)
-    {
-        if (auth()->user()->role !== 'admin') {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
-
-        $user = User::find($id);
-
-        if (!$user) {
-            return response()->json(['message' => 'User not found'], 404);
-        }
-
-        $validated = $request->validate([
-            'name' => 'nullable|string|max:255',
-            'email' => 'nullable|email|unique:users,email,' . $id,
-            'password' => 'nullable|string|min:8',
-        ]);
-
-        $user->update([
-            'name' => $validated['name'] ?? $user->name,
-            'email' => $validated['email'] ?? $user->email,
-            'password' => isset($validated['password']) ? bcrypt($validated['password']) : $user->password,
-        ]);
-
-        return response()->json($user);
+   // Update user (Admin-only)
+public function updateUser(Request $request, $id)
+{
+    // Check if the authenticated user is an admin
+    if (auth()->user()->role !== 'admin') {
+        return response()->json(['message' => 'Unauthorized'], 403);
     }
+
+    // Find the user to update
+    $user = User::find($id);
+
+    // If the user is not found, return a 404 response
+    if (!$user) {
+        return response()->json(['message' => 'User not found'], 404);
+    }
+
+    // Validate the request
+    $validated = $request->validate([
+        'name' => 'nullable|string|max:255',
+        'email' => 'nullable|email|unique:users,email,' . $id,
+        'password' => 'nullable|string|min:8',
+        'role' => 'nullable|string|in:user,admin,tattoo_artist', // Include tattoo_artist in the role validation
+    ]);
+
+    // Update user details including role if provided
+    $user->update([
+        'name' => $validated['name'] ?? $user->name,
+        'email' => $validated['email'] ?? $user->email,
+        'password' => isset($validated['password']) ? bcrypt($validated['password']) : $user->password,
+        'role' => $validated['role'] ?? $user->role, // Update role if provided
+    ]);
+
+    // Return updated user details
+    return response()->json($user);
+}
+
 
     // Delete user (Admin-only)
     public function deleteUser($id)
