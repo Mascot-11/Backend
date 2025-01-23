@@ -34,7 +34,7 @@ class CustomResetPasswordNotification extends Notification
      */
     public function toMail(object $notifiable): MailMessage
     {
-        $url = url('api/password/reset') . '?token=' . $this->token; // Custom API URL for password reset
+        $url =  url('http://localhost:5173/resetpassword') . '?token=' . $this->token; // Custom API URL for password reset
 
         return (new MailMessage)
                     ->subject('Reset Your Password')

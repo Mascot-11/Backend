@@ -1,10 +1,11 @@
 <?php
-
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserAuthController;
 use App\Http\Controllers\AppointmentController;
-use App\Models\User;
+use App\Http\Controllers\ChatController;
+
 
 // Public routes (no authentication required)
 Route::post('/register', [UserAuthController::class, 'register'])->name('register');
@@ -34,4 +35,23 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/users/{id}', [UserAuthController::class, 'updateUser']); // Update user (admin)
     Route::delete('/users/{id}', [UserAuthController::class, 'deleteUser']); // Delete user (admin)
     });
+
+
+
+Route::middleware(['auth:sanctum'])->group(function () {
+    // Route for users to start a chat
+    Route::post('/chat/start', [ChatController::class, 'startChat']);
+
+    // Route for admins to list all chats (protected by 'admin' middleware)
+    Route::get('/chats', [ChatController::class, 'listChats'])->middleware('can:isAdmin');
+
+    // Route to fetch messages for a specific chat (accessible by chat participants or admins)
+    Route::get('/chat/{chat}/messages', [ChatController::class, 'fetchMessages']);
+
+    // Route to send a message in a specific chat (accessible by chat participants or admins)
+    Route::post('/chat/{chat}/message', [ChatController::class, 'sendMessage']);
+});
+
+
+
 });

@@ -23,7 +23,15 @@ class User extends Authenticatable
         'password',
         'role', // Make sure 'role' is included for mass assignment
     ];
+    public function chats()
+    {
+        return $this->hasMany(Chat::class, 'user_id');
+    }
 
+    public function assignedChats()
+    {
+        return $this->hasMany(Chat::class, 'admin_id');
+    }
     /**
      * The attributes that should be hidden for serialization.
      *
