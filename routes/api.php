@@ -5,6 +5,17 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserAuthController;
 use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\ChatController;
+use App\Http\Controllers\TattooGalleryController;
+
+
+// Public route to fetch all tattoo gallery images
+Route::get('/tattoo-gallery', [TattooGalleryController::class, 'index']); // Public route for viewing gallery
+
+Route::middleware('auth:api')->group(function () {
+    // Admin-only routes for adding and deleting images
+    Route::post('/tattoo-gallery', [TattooGalleryController::class, 'store']); // Admin upload image
+    Route::delete('/tattoo-gallery/{id}', [TattooGalleryController::class, 'destroy']); // Admin delete image
+});
 
 
 // Public routes (no authentication required)
@@ -34,21 +45,17 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/users', [UserAuthController::class, 'createUser']); // Create new user (admin)
     Route::put('/users/{id}', [UserAuthController::class, 'updateUser']); // Update user (admin)
     Route::delete('/users/{id}', [UserAuthController::class, 'deleteUser']); // Delete user (admin)
+    Route::post('/tattoo-gallery', [TattooGalleryController::class, 'store']); // Upload new image
+    Route::delete('/tattoo-gallery/{id}', [TattooGalleryController::class, 'destroy']); // Delete image
     });
 
 
 
 Route::middleware(['auth:sanctum'])->group(function () {
-    // Route for users to start a chat
+
     Route::post('/chat/start', [ChatController::class, 'startChat']);
-
-    // Route for admins to list all chats (protected by 'admin' middleware)
     Route::get('/chats', [ChatController::class, 'listChats'])->middleware('can:isAdmin');
-
-    // Route to fetch messages for a specific chat (accessible by chat participants or admins)
     Route::get('/chat/{chat}/messages', [ChatController::class, 'fetchMessages']);
-
-    // Route to send a message in a specific chat (accessible by chat participants or admins)
     Route::post('/chat/{chat}/message', [ChatController::class, 'sendMessage']);
 });
 
