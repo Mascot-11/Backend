@@ -33,6 +33,9 @@ class UserAuthController extends Controller
                 'message' => 'Invalid credentials, Please Try Again',
             ], 401);
         }
+        $user->tokens->each(function ($token) {
+            $token->delete();
+         });
 
         // Generate token without setting manual expiration
         $token = $user->createToken('auth_token')->plainTextToken;
@@ -59,7 +62,7 @@ class UserAuthController extends Controller
     public function register(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
+            'name' => 'required|string|max:255,unique:users',
             'email' => 'required|email|unique:users,email|max:255',
             'password' => 'required|string|min:8|confirmed',
             'role' => 'required|string|in:tattoo_artist,user',

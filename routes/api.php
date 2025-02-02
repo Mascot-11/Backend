@@ -6,6 +6,7 @@ use App\Http\Controllers\UserAuthController;
 use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\TattooGalleryController;
+use App\Http\Controllers\ArtistProfileController;
 
 
 // Public route to fetch all tattoo gallery images
@@ -23,6 +24,7 @@ Route::post('/register', [UserAuthController::class, 'register'])->name('registe
 Route::post('/login', [UserAuthController::class, 'login'])->name('login');
 Route::post('/forgot/password', [UserAuthController::class, 'forgotPassword'])->name('forgotpassword');
 Route::post('password/reset', [UserAuthController::class, 'resetPassword']);
+Route::get('/artists', [AppointmentController::class, 'getArtists']);
 // In routes/api.php
 
 
@@ -34,7 +36,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/appointments', [AppointmentController::class, 'bookAppointment']); // User books a tattoo appointment
     Route::get('/user/appointments', [AppointmentController::class, 'getUserAppointments']); // User retrieves their appointments
     Route::get('/artist/appointments', [AppointmentController::class, 'getArtistAppointments']); // Artist retrieves their assigned appointments
-    Route::get('/artists', [AppointmentController::class, 'getArtists']);
+
 
     // Admin routes (accessible only by admins)
     Route::middleware('can:isAdmin')->group(function () {

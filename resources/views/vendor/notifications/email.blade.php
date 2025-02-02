@@ -15,9 +15,9 @@
     You are receiving this email because we received a password reset request for your account.
 </p>
 
-{{-- Company Logo --}}
+{{-- Random Image --}}
 <div style="text-align: center; margin-top: 30px;">
-    <img src="{{ asset('images/Colormode.png') }}" alt="Company Logo" style="width: 200px; height: auto; border-radius: 8px;"/>
+    <img src="https://images.unsplash.com/photo-1738249231526-b16dd0b3da85?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHx0b3BpYy1mZWVkfDN8cVBZc0R6dkpPWWN8fGVufDB8fHx8fA%3D%3D" style="width: 100%; height: auto; border-radius: 8px;" />
 </div>
 
 {{-- Action Button --}}
@@ -37,14 +37,14 @@
 {{-- Footer --}}
 <div style="margin-top: 40px; text-align: center; font-size: 12px; color: #888; font-family: 'Arial', sans-serif; line-height: 1.6;">
     <p>You received this email because you signed up at our site. If you didn't request this, please ignore this email.</p>
-    <p>All Rights Reserved <strong>Colo Mode Nepal</strong> &copy; 2024</p>
+    <p>All Rights Reserved <strong>Color Mode Nepal</strong> &copy; 2024</p>
 </div>
 
 {{-- Subcopy --}}
 <x-slot:subcopy>
     @lang(
         "If you're having trouble clicking the \"Reset Password\" button, copy and paste the URL below\n".
-        'into your web browser: ',
+        'into your web browser: '
     )
     <span class="break-all" style="font-family: 'Arial', sans-serif; color: #555; font-size: 14px;">
         [{{ $displayableActionUrl }}]({{ $actionUrl }})

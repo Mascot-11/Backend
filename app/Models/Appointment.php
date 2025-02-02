@@ -14,6 +14,7 @@ class Appointment extends Model
         'artist_id',
         'appointment_datetime',
         'description',
+        'image_url',
         'status',
     ];
 

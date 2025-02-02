@@ -101,4 +101,10 @@ class User extends Authenticatable
     {
     return $this->hasMany(Appointment::class, 'artist_id');
     }
+    // In User Model
+public function artistProfile()
+{
+    return $this->hasOne(ArtistProfile::class);
+}
+
 }

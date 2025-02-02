@@ -114,7 +114,7 @@ class TattooGalleryController extends Controller
             $responseData = json_decode($response->getBody()->getContents(), true);
 
             // Log full response for debugging
-            \Log::info('ImgBB API Response:', $responseData);
+
 
             // Check if the image was uploaded successfully
             if ($response->successful() && isset($responseData['data']['url'])) {
@@ -122,12 +122,10 @@ class TattooGalleryController extends Controller
             }
 
             // Log error if upload fails
-            \Log::error('ImgBB upload failed: ' . json_encode($responseData));
-            return '';
+
         } catch (\Exception $e) {
             // Log any exceptions that occur during the upload
-            \Log::error('ImgBB API upload error: ' . $e->getMessage());
-            return '';
+
         }
     }
 }
