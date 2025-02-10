@@ -123,12 +123,12 @@ return [
     |
     */
 
-    'markdown' => [
-        'theme' => 'default',
+    // 'markdown' => [
+    //     'theme' => 'default',
 
-        'paths' => [
-            resource_path('views/vendor/mail'),
-        ],
-    ],
+    //     // 'paths' => [
+    //     //     resource_path('views/vendor/mail'),
+    //     // ],
+    // ],
 
 ];

@@ -6,6 +6,9 @@ use Illuminate\Http\Request;
 use App\Models\Appointment;
 use App\Models\User;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Notification;
+use App\Notifications\AppointmentConfirmed;
+use App\Notifications\AppointmentCanceled;
 
 class AppointmentController extends Controller
 {
@@ -204,6 +207,15 @@ public function getUserAppointments()
 
             if (!$appointment) {
                 return response()->json(['message' => 'Appointment not found.'], 404);
+            }
+
+            if($validated['status'] === 'confirmed') {
+                // Notify the user that their appointment has been confirmed
+                $appointment->user->notify(new AppointmentConfirmed($appointment));
+            }
+            elseif($validated['status'] === 'canceled') {
+                // Notify the user that their appointment has been canceled
+                $appointment->user->notify(new AppointmentCanceled($appointment));
             }
 
             $appointment->update(['status' => $validated['status']]);
