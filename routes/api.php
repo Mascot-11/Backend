@@ -6,8 +6,22 @@ use App\Http\Controllers\UserAuthController;
 use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\TattooGalleryController;
-use App\Http\Controllers\ArtistProfileController;
+use App\Http\Controllers\TicketController;
+use App\Http\Controllers\EventController;
 
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/tickets/purchase', [TicketController::class, 'purchase']);
+    Route::post('/tickets/verify-esewa', [TicketController::class, 'verifyEsewaPayment']);
+    Route::get('/ticket-details/{ticketId}', [TicketController::class, 'getTicketDetails']);
+});
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/events', [EventController::class, 'index']);
+    Route::post('/events', [EventController::class, 'store']);
+    Route::get('/events/{id}', [EventController::class, 'show']);
+    Route::put('/events/{id}', [EventController::class, 'update']);
+    Route::delete('/events/{id}', [EventController::class, 'destroy']);
+    });
 
 // Public route to fetch all tattoo gallery images
 Route::get('/tattoo-gallery', [TattooGalleryController::class, 'index']); // Public route for viewing gallery

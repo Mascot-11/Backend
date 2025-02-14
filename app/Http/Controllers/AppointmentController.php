@@ -125,7 +125,7 @@ private function uploadImageToImgBB($imageFile)
     }
 
     // Log the error if upload fails
-    \Log::error('ImgBB image upload failed: ' . $response->body());
+
 
     return null; // Return null if image upload failed
 }

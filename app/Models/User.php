@@ -27,7 +27,10 @@ class User extends Authenticatable
     {
         return $this->hasMany(Chat::class, 'user_id');
     }
-
+public function tickets()
+    {
+        return $this->hasMany(Ticket::class);
+    }
     public function assignedChats()
     {
         return $this->hasMany(Chat::class, 'admin_id');

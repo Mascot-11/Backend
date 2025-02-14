@@ -79,10 +79,6 @@ class TattooGalleryController extends Controller
     private function uploadImageToImgBB($image)
     {
         $apiKey = env('IMGBB_API_KEY'); // Store your ImgBB API Key in the .env file
-        \Log::info('App Name: ' . env('APP_NAME'));
-
-        // Log the API key for debugging purposes
-        \Log::info('ImgBB API Key: ' . $apiKey);
 
         // Ensure the ImgBB API Key is set
         if (!$apiKey) {
