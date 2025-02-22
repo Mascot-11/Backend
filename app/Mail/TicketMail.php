@@ -2,7 +2,6 @@
 
 namespace App\Mail;
 
-use App\Models\Ticket;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
@@ -10,18 +9,34 @@ use Barryvdh\DomPDF\Facade\Pdf;
 
 class TicketMail extends Mailable
 {
-    use Queueable, SerializesModels;
-    public $ticket;
+    use SerializesModels;
+    public $payment;
+    public $pdfPath;
+    public $userData;
 
-    public function __construct(Ticket $ticket) {
-        $this->ticket = $ticket;
+    public function __construct($payment, $pdfPath, $userData)
+    {
+        $this->payment = $payment;
+        $this->pdfPath = $pdfPath;
+        $this->userData = $userData;
     }
 
-    public function build() {
-        $pdf = Pdf::loadView('pdf.ticket', ['ticket' => $this->ticket]);
-        return $this->subject('Your Event Ticket')
-                    ->view('emails.ticket')
-                    ->attachData($pdf->output(), "ticket.pdf");
+    // public function build()
+    // {
+    //     $pdf = Pdf::loadView('pdf.ticket', ['ticket' => $this->ticket]);
+    //     return $this->subject('Your Event Ticket')
+    //         ->view('emails.ticket')
+    //         ->attachData($pdf->output(), "ticket.pdf");
+    // }
+
+    public function build()
+    {
+        return $this->to($this->userData->email)
+            ->subject('Your Event Ticket')
+            ->view('emails.ticket');
+            // ->attach($this->pdfPath, [
+            //     'as' => 'Your_Ticket.pdf',
+            //     'mime' => 'application/pdf',
+            // ]);
     }
 }
-

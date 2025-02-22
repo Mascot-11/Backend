@@ -75,6 +75,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/chat/{chat}/message', [ChatController::class, 'sendMessage']);
 });
 
-
-
 });
+
+
+Route::post('/khalti/callback', [TicketController::class, 'handleKhaltiCallback'])->name('khalti.callback');
