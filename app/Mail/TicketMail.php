@@ -33,10 +33,10 @@ class TicketMail extends Mailable
     {
         return $this->to($this->userData->email)
             ->subject('Your Event Ticket')
-            ->view('emails.ticket');
-            // ->attach($this->pdfPath, [
-            //     'as' => 'Your_Ticket.pdf',
-            //     'mime' => 'application/pdf',
-            // ]);
+            ->view('emails.ticket')
+            ->attach($this->pdfPath, [
+                 'as' => 'Your_Ticket.pdf',
+                 'mime' => 'application/pdf',
+             ]);
     }
 }

@@ -90,12 +90,11 @@ class TicketController extends Controller
                 $event->available_tickets -= $quantity;
 
                 // user details
-                $user = $request->user_id;
-                $userData = User::findOrFail($user);
+                $userData = User::findOrFail($request->user_id);
 
                 // create the payments
                 $payment = Payment::create([
-                    'user_id' => $user,
+                    'user_id' => $userData->id,
                     'event_id' => $eventId,
                     'price' => $ticket_price,
                     'quantity' => $quantity,
@@ -106,12 +105,11 @@ class TicketController extends Controller
                 ]);
                 $payment->save();
 
-
                 // update the events
                 $event->save();
 
                 // making pdf
-                $pdf = Pdf::loadView('pdf.ticket', compact('payment'));
+                $pdf = Pdf::loadView('pdf.ticket', compact('payment', 'userData'));
                 $pdfDirectory = storage_path("app/public/tickets/");
 
                 // ✅ Check and create the directory if it doesn’t exist
@@ -122,7 +120,7 @@ class TicketController extends Controller
                 $pdf->save($pdfPath);
 
                 // email the user
-                Mail::to($user->email)->send(new TicketMail($payment, $pdfPath, $userData));
+                Mail::to($userData->email)->send(new TicketMail($payment, $pdfPath, $userData));
 
                 return response()->json([
                     'message' => 'Transaction completed successfully, Payment for event confirmed',

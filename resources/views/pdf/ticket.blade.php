@@ -23,12 +23,11 @@
 <body>
     <div class="ticket">
         <h2>Ticket Confirmation</h2>
-        <!-- {{-- <p><strong>Ticket ID:</strong> {{ $ticket->id }}</p>
-        <p><strong>User Name:</strong> {{ $user->name }}</p>
-        <p><strong>Email:</strong> {{ $user->email }}</p>
-        <p><strong>Event:</strong> {{ $ticket->event->name ?? 'N/A' }}</p>
-        <p><strong>Seat Number:</strong> {{ $ticket->seat_number }}</p>
-        <p><strong>Price:</strong> ${{ number_format($ticket->amount / 100, 2) }}</p> --}} -->
+        <p><strong>Ticket No:</strong> {{ $payment->transaction_id }}</p>
+        <p><strong>User Name:</strong> {{ $userData->name }}</p>
+        <p><strong>Email:</strong> {{ $userData->email }}</p>
+        <p><strong>Event:</strong> {{ $payment->event->name ?? 'N/A' }}</p>
+        <p><strong>Price:</strong> ${{ $payment->total_amount }}</p>
     </div>
 </body>
 
