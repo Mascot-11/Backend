@@ -82,7 +82,7 @@ class TattooGalleryController extends Controller
 
         // Ensure the ImgBB API Key is set
         if (!$apiKey) {
-            \Log::error('ImgBB API key not found.');
+
             return '';
         }
 
