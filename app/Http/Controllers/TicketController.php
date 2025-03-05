@@ -8,6 +8,7 @@ use App\Models\Ticket;
 use App\Mail\TicketMail;
 use App\Models\Payment;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
@@ -86,7 +87,8 @@ class TicketController extends Controller
 
                 // amount calculation
                 $total_amount = $request->total_amount / 100;
-                $quantity = ($total_amount / 100) / $ticket_price;
+                $quantity = $total_amount / $ticket_price;
+
                 $event->available_tickets -= $quantity;
 
                 // user details
@@ -139,60 +141,9 @@ class TicketController extends Controller
         }
     }
 
-    private function initiateEsewaPayment($amount, $event)
-    {
-        // Generate unique transaction ID
-        $transactionId = "event_ticket_" . time();
 
-        // Prepare payment parameters
-        $params = [
-            'amt' => $amount,
-            'txAmt' => 0,
-            'psc' => 0,
-            'pdc' => 0,
-            'scd' => env('ESEWA_MERCHANT_CODE'),
-            'pid' => $transactionId,
-            'su' => env('ESEWA_SUCCESS_URL'),
-            'fu' => env('ESEWA_FAILURE_URL')
-        ];
 
-        // Return redirect URL for frontend
-        return response()->json([
-            'message' => 'Redirect to eSewa for payment',
-            'esewa_url' => 'https://uat.esewa.com.np/epay/main?' . http_build_query($params)
-        ]);
-    }
 
-    public function verifyEsewaPayment(Request $request)
-    {
-        $request->validate([
-            'amount' => 'required|numeric',
-            'refId' => 'required|string',
-            'pid' => 'required|string',
-            'event_id' => 'required|exists:events,id',
-            'quantity' => 'required|integer|min:1'
-        ]);
-
-        try {
-            // Send verification request to eSewa API
-            $response = Http::asForm()->post('https://uat.esewa.com.np/epay/transrec', [
-                'amt' => $request->amount,
-                'scd' => env('ESEWA_MERCHANT_CODE'),
-                'rid' => $request->refId,
-                'pid' => $request->pid
-            ]);
-
-            if ($response->body() == "Success") {
-                return $this->processTicket($request->event_id, auth()->user(), $request->quantity, "esewa");
-            } else {
-                Log::error("eSewa payment verification failed for transaction: {$request->pid}");
-                return response()->json(['message' => 'eSewa payment verification failed'], 400);
-            }
-        } catch (\Exception $e) {
-            Log::error("Error verifying eSewa payment: " . $e->getMessage());
-            return response()->json(['message' => 'Internal server error'], 500);
-        }
-    }
 
     public function getTicketDetails($ticketId)
     {
