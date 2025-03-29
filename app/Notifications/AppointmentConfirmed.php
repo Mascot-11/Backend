@@ -41,7 +41,7 @@ class AppointmentConfirmed extends Notification
     ->line('We are pleased to inform you that your appointment with **' . $this->appointment->artist->name . '** has been successfully confirmed!')
     ->line('📅 **Date:** ' . Carbon::parse($this->appointment->appointment_datetime)->toFormattedDateString())
     ->line('⏰ **Time:** ' . Carbon::parse($this->appointment->appointment_datetime)->format('h:i A'))
-    ->action('📌 View Appointment Details', env('FRONTEND_URL') . "/myappointments/{$this->appointment->id}")
+    ->action('📌 View Appointment Details', env('FRONTEND_URL') . "/myappointments")
     ->line('If you have any questions, feel free to contact us.')
     ->line('Thank you for choosing our service! We look forward to seeing you soon. 😊');
     }

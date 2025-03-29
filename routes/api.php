@@ -16,7 +16,7 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 Route::middleware('auth:sanctum')->group(function () {
-   Route::get('/events', [EventController::class, 'index']);
+
     Route::post('/events', [EventController::class, 'store']);
     Route::get('/events/{id}', [EventController::class, 'show']);
     Route::put('/events/{id}', [EventController::class, 'update']);
@@ -54,6 +54,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Admin routes (accessible only by admins)
     Route::middleware('can:isAdmin')->group(function () {
+
     Route::get('/appointments', [AppointmentController::class, 'getAllAppointments']); // Admin retrieves all appointments
     Route::put('/appointments/{id}/status', [AppointmentController::class, 'updateAppointmentStatus']); // Admin updates appointment status
     Route::delete('/appointments/{id}', [AppointmentController::class, 'deleteAppointment']); // Admin deletes an appointment
@@ -65,9 +66,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/tattoo-gallery/{id}', [TattooGalleryController::class, 'destroy']); // Delete image
     });
 
-
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::get('/payments/user/{userId}', [TicketController::class, 'getUserPayments']);
+        Route::get('/payments/all', [TicketController::class, 'getAllPayments']);
+    });
 
 Route::middleware(['auth:sanctum'])->group(function () {
+    // Get all payments of a specific user
+// Get all payments
 
     Route::post('/chat/start', [ChatController::class, 'startChat']);
     Route::get('/chats', [ChatController::class, 'listChats'])->middleware('can:isAdmin');
@@ -76,6 +82,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 });
 
 });
-
-
+//Route::get('/payments/user/{userId}', [TicketController::class, 'getUserPayments']);
+//Route::get('/payments/all', [TicketController::class, 'getAllPayments']);
 Route::post('/khalti/callback', [TicketController::class, 'handleKhaltiCallback'])->name('khalti.callback');
+Route::get('/events', [EventController::class, 'index']);

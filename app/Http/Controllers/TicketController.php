@@ -17,6 +17,26 @@ use Illuminate\Support\Facades\Mail;
 
 class TicketController extends Controller
 {
+    public function getUserPayments($userId)
+{
+    $user = User::findOrFail($userId);
+    $payments = Payment::where('user_id', $user->id)->get();
+
+    return response()->json([
+        'user' => $user->name,
+        'payments' => $payments
+    ]);
+}
+
+public function getAllPayments()
+{
+    $payments = Payment::with('user', 'event')->get();
+
+    return response()->json([
+        'payments' => $payments
+    ]);
+}
+
     public function purchase(Request $request)
     {
         $eventData = $request->validate([
