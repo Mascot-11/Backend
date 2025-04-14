@@ -10,7 +10,17 @@ class Event extends Model
     use HasFactory;
 
     // Add 'image_url' to the fillable array
-    protected $fillable = ['name', 'description', 'date', 'price', 'available_tickets', 'image_url'];
+    protected $fillable = [
+        'name',
+        'description',
+        'date',
+        'time',
+        'price',
+        'available_tickets',
+        'location',
+        'image_url',
+    ];
+
 
     public function tickets()
     {
