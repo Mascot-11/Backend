@@ -21,13 +21,6 @@ class TicketMail extends Mailable
         $this->userData = $userData;
     }
 
-    // public function build()
-    // {
-    //     $pdf = Pdf::loadView('pdf.ticket', ['ticket' => $this->ticket]);
-    //     return $this->subject('Your Event Ticket')
-    //         ->view('emails.ticket')
-    //         ->attachData($pdf->output(), "ticket.pdf");
-    // }
 
     public function build()
     {

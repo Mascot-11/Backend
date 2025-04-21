@@ -201,7 +201,7 @@ public function getUserAppointments()
 
             $validated = $request->validate([
                 'status' => 'required|in:pending,confirmed,canceled',
-            ]);
+            ]); 
 
             $appointment = Appointment::find($id);
 
